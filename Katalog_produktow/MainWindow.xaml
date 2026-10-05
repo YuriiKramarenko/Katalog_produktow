@@ -5,8 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Katalog_produktow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow" Height="450" Width="400">
+    <StackPanel Margin="20,20,21,14" Height="400">
+        <TextBlock Text="Nazwa produktu" />
+        <TextBox x:Name="NazwaTextBox" Margin="0,5,0,10" />
+        
+        <TextBlock Text="Cena" />
+        <TextBox x:Name="CenaTextBox" Margin="0,5,0,10" />
+        
+        <TextBlock Text="Ilość" />
+        <TextBox x:Name="IloscTextBox" Margin="0,5,0,10" />
+        
+        <Button x:Name="ObliczButton" Content="Oblicz wartość" Click="Oblicz"/>
 
-    </Grid>
+        <TextBlock x:Name="WynikTextBlock" FontSize="16"/>
+    </StackPanel>
 </Window>
