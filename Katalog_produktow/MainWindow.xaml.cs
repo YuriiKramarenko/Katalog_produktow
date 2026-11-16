@@ -1,4 +1,4 @@
-﻿using Katalog_produktow;
+﻿using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,16 +9,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Collections.ObjectModel;
 
-namespace KatalogProduktow4K
+namespace KatalogProduktow
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        ObservableCollection<Produkt> produkty = new ObservableCollection<Produkt>();
+        //jeżeli potrzebujemy skorzystać z czegoś przez data binding, to musi publiczne i 
+        //musi być własnością (property), a nie polem (field) - musi mieć get i set
+        public ObservableCollection<Produkt> produkty { get; set; } = new ObservableCollection<Produkt>();
         public MainWindow()
         {
             InitializeComponent();
@@ -26,7 +27,12 @@ namespace KatalogProduktow4K
             KategorieComboBox.SelectedIndex = 0;
             produkty.Add(new Produkt { Nazwa = "Laptop", Cena = 3500, Ilosc = 5, Kategoria = "Elektronika" });
             produkty.Add(new Produkt { Nazwa = "Koszula", Cena = 120, Ilosc = 10, Kategoria = "Odzież" });
-            ListaProduktow.ItemsSource = produkty;
+            //ListaProduktow.ItemsSource = produkty;
+            //zamiast przypisywać itemsource możemmy ustalić kontekst danych dla całego okna,
+            //wtedy wszystkie kontrolki w tym oknie mogą korzystać z tego kontekstu
+            //i przez to czytać dane z właściwości tego okna (czyli z MainWindow)
+            //takie jak public ObservableCollection<Produkt> produkty { get; set; }
+            DataContext = this;
         }
 
         private void Oblicz(object sender, RoutedEventArgs e)
@@ -59,23 +65,41 @@ namespace KatalogProduktow4K
 
         private void DodajProdukt(object sender, RoutedEventArgs e)
         {
-            string nazwa = NazwaTextBox.Text;
-            double cena = double.Parse(CenaTextBox.Text);
-            int ilosc = int.Parse(IloscTextBox.Text);
-            string kategoria = KategorieComboBox.SelectedItem as string ?? "brak kategorii";
+            if (string.IsNullOrWhiteSpace(NazwaTextBox.Text))
+            {
+                MessageBox.Show("Podaj nazwę produktu.");
+                return;
+            }
+            if (!double.TryParse(CenaTextBox.Text, out double cena) || cena < 0)
+            {
+                MessageBox.Show("Niepoprawna wartość ceny.");
+                return;
+            }
+            if (!int.TryParse(IloscTextBox.Text, out int ilosc) || ilosc < 0)
+            {
+                MessageBox.Show("Niepoprawna wartość ilości.");
+                return;
+            }
 
-            produkty.Add(new Produkt { Nazwa = nazwa, Cena = cena, Ilosc = ilosc, Kategoria = kategoria });
+            produkty.Add(new Produkt
+            {
+                Nazwa = NazwaTextBox.Text,
+                Cena = cena,
+                Ilosc = ilosc,
+                Kategoria = KategorieComboBox.SelectedItem as string ?? "brak kategorii",
+                Promocja = PromocjaCheckBox.IsChecked == true
+            });
         }
 
         private void UsunProdukt(object sender, RoutedEventArgs e)
         {
-            if(ListaProduktow.SelectedItem is Produkt wybranyProdukt)
+            if (ListaProduktow.SelectedItem is Produkt wybranyProdukt)
             {
                 produkty.Remove(wybranyProdukt);
             }
             else
             {
-                MessageBox.Show("Nie wybranoproduktu do usunięcia", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Nie wybrano produktu do usunięcia.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
